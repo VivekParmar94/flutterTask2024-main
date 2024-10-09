@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:vivek_practical_demo/Contact/ContactScreen.dart';
-import 'package:vivek_practical_demo/Models/Contacts/ContactResponse.dart';
+
+import '../Models/Contacts/ContactsDetailsResponse.dart';
 import '../services/ApiClass.dart';
 import '../utils/common_widgets.dart';
 
@@ -18,8 +18,15 @@ class ContactDetailScreen extends StatefulWidget {
 }
 
 class ContactDetailScreenState extends State<ContactDetailScreen> {
-  List<Data> dataItems = []; // List of Post objects
+  final _formKeyAddContact = GlobalKey<FormState>(); // Key for the form
+
+  Data dataItems = new Data(); // List of Post objects
   bool isLoading = false;
+  late String firstName;
+  TextEditingController mobileNumberController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
 
   @override
   void initState() {
@@ -43,8 +50,7 @@ class ContactDetailScreenState extends State<ContactDetailScreen> {
   }
 
   Future<void> callContactDetailApi(String token, String id) async {
-    print('calling api');
-
+    print('Contact calling api');
     setState(() {
       isLoading = true;
     });
@@ -61,10 +67,14 @@ class ContactDetailScreenState extends State<ContactDetailScreen> {
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      ContactResponse apiResponse = ContactResponse.fromJson(jsonResponse);
-      dataItems = apiResponse.data!;
-
+      ContactsDetailsResponse apiResponse =
+          ContactsDetailsResponse.fromJson(jsonResponse);
       setState(() {
+        dataItems = apiResponse.data!;
+        firstNameController.text = dataItems.firstName.toString();
+        lastNameController.text = dataItems.lastName.toString();
+        emailController.text = dataItems.email.toString();
+        mobileNumberController.text = dataItems.mobile.toString();
         isLoading = false;
       });
     } else {
@@ -77,9 +87,12 @@ class ContactDetailScreenState extends State<ContactDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _formKeyAddContact,
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          "Contact Detail",
+          "Contact Details",
           style: TextStyle(
             // Custom text style
             color: Colors.black,
@@ -88,14 +101,7 @@ class ContactDetailScreenState extends State<ContactDetailScreen> {
         ),
         leading: IconButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ContactScreen(
-                  token: widget.token.toString(),
-                ),
-              ),
-            );
+            Navigator.of(context).pop();
           },
           icon: const Icon(
             Icons.arrow_back,
@@ -104,80 +110,151 @@ class ContactDetailScreenState extends State<ContactDetailScreen> {
           ),
         ),
       ),
-      body: dataItems.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          : ListTile(
-              subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [for (var i in dataItems) _buidbody(i)]),
-            ),
-    );
-  }
-
-  Widget _buidbody(i) {
-    return Column(
-      children: [
-        const SizedBox(height: 8),
-        CustomText(
-          text: "First Name: ${i.firstName.toString()}",
-          style: const TextStyle(
-            // Custom text style
-            color: Colors.blue,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
+      body: Center(
+          child: isLoading
+              ? CircularProgressIndicator() // Show progress bar while loading
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 50),
+                      CustomContainer(
+                        width: double.infinity,
+                        height: 60,
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Center(
+                          child: CustomText(
+                            text: firstNameController.text,
+                            style: const TextStyle(
+                              // Custom text style
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      CustomContainer(
+                        width: double.infinity,
+                        height: 60,
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Center(
+                          child: CustomText(
+                            text: lastNameController.text,
+                            style: const TextStyle(
+                              // Custom text style
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      CustomContainer(
+                        width: double.infinity,
+                        height: 60,
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Center(
+                          child: CustomText(
+                            text: emailController.text,
+                            style: const TextStyle(
+                              // Custom text style
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      CustomContainer(
+                        width: double.infinity,
+                        height: 60,
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Center(
+                          child: CustomText(
+                            text: mobileNumberController.text,
+                            style: const TextStyle(
+                              // Custom text style
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      /*SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: CustomButton(
+                  text: 'Update Contact',
+                  onPressed: () {
+                    // _checkValidation();
+                  },
+                  elevation: 5.0,
+                  // Button elevation
+                  textStyle: TextStyle(
+                    // Custom text style
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: Offset(2, 2),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                    // Custom box decoration
+                    color: Colors.purple,
+                    borderRadius: BorderRadius.circular(30.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        offset: Offset(4, 4),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                ),
+              ),*/
+                      SizedBox(height: 200),
+                      // Simulate more content to enable scrolling
+                    ],
+                  ),
+                ) // Show error message if data is null
           ),
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
-        const SizedBox(height: 8),
-        CustomText(
-          text: "Last Name: ${i.lastName.toString()}",
-          style: const TextStyle(
-            // Custom text style
-            color: Colors.blue,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
-        const SizedBox(height: 8),
-        CustomText(
-          text: "Email: ${i.email.toString()}",
-          style: const TextStyle(
-            // Custom text style
-            color: Colors.blue,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
-        const SizedBox(height: 8),
-        CustomText(
-          text: "Mobile : ${i.mobile.toString()}",
-          style: const TextStyle(
-            // Custom text style
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
-      ],
     );
   }
 
   @override
   void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    mobileNumberController.dispose();
+    emailController.dispose();
     super.dispose();
   }
 }

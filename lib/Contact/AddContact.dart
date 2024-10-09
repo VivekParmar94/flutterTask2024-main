@@ -5,13 +5,14 @@ import 'package:http/http.dart' as http;
 import 'package:vivek_practical_demo/BaseClassScreen.dart';
 import 'package:vivek_practical_demo/Contact/ContactScreen.dart';
 import 'package:vivek_practical_demo/Models/Contacts/AddContactResponse.dart';
-import 'package:vivek_practical_demo/utils/extension.dart';
 
 import '../services/ApiClass.dart';
 import '../utils/common_widgets.dart';
+import '../utils/constant.dart';
 
 class AddContact extends StatefulWidget {
   final String token;
+
   const AddContact({super.key, required this.token});
 
   @override
@@ -50,33 +51,60 @@ class AddContactState extends State<AddContact> {
       BaseScreen.getToastShow('Enter LastName');
     } else if (email.isEmpty) {
       BaseScreen.getToastShow('Enter Email');
+    } else if (!checkEmailValidation(email)) {
+      BaseScreen.getToastShow('Enter valid email address');
     } else if (mobileNumber.isEmpty) {
       BaseScreen.getToastShow('Enter MobileName');
     } else if (mobileNumber.length < 10) {
       BaseScreen.getToastShow('Enter valid MobileNumber');
     } else {
-      putchAddContactApi(mobileNumber, firstname);
+      String loginToken = widget.token;
+      putchAddContactApi(mobileNumber, firstname, lastname, email, loginToken);
     }
   }
 
   Future<AddContactResponse> putchAddContactApi(
-      String mobileNumber, String firstname) async {
+      String mobileNumber,
+      String firstname,
+      String lastName,
+      String email,
+      String loginToken) async {
+    print('calling add contact api');
     final url = Uri.parse(APIClass.putchcontactApi);
     // Define the body
     final body = {
       'mobile': mobileNumber,
       'first_name': firstname,
+      'last_name': lastName,
+      'email': email,
       "contact_types": [
         {
-          "id": "a1dd708a-3db5-11ef-9634-484520bf7692",
+          'id': 'a1dd708a-3db5-11ef-9634-484520bf7692',
         }
       ],
     };
+    /*Map<String, dynamic> data = {
+      "first_name": "demo user2",
+      "last_name": "demo2",
+      "email": "denouser2@gmail.com",
+      "mobile": "2121212122",
+      "contact_types": [
+        {
+          "id": "a1dd708a-3db5-11ef-9634-484520bf7692"
+        }
+      ]
+    };*/
     // Make the POST request
     final response = await http.post(
       url,
-      body: body,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $loginToken',
+        // Passing the token in the Authorization header
+      },
+      body: jsonEncode(body), // Convert map to JSON format
     );
+
     if (response.statusCode == 200) {
       print(response.body);
       gotoNextScreen();
@@ -154,6 +182,9 @@ class AddContactState extends State<AddContact> {
                       fillColor: Colors.black87,
                       // Set the background color here
                       filled: true,
+                      hintStyle: TextStyle(
+                        color: Colors.white, // Change hint text color here
+                      ),
                     ),
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -182,6 +213,9 @@ class AddContactState extends State<AddContact> {
                       fillColor: Colors.black87,
                       // Set the background color here
                       filled: true,
+                      hintStyle: TextStyle(
+                        color: Colors.white, // Change hint text color here
+                      ),
                     ),
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -210,6 +244,9 @@ class AddContactState extends State<AddContact> {
                       fillColor: Colors.black87,
                       // Set the background color here
                       filled: true,
+                      hintStyle: TextStyle(
+                        color: Colors.white, // Change hint text color here
+                      ),
                     ),
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -238,6 +275,9 @@ class AddContactState extends State<AddContact> {
                       fillColor: Colors.black87,
                       // Set the background color here
                       filled: true,
+                      hintStyle: TextStyle(
+                        color: Colors.white, // Change hint text color here
+                      ),
                     ),
                     keyboardType: TextInputType.text,
                     cursorColor: Colors.white,
@@ -298,5 +338,17 @@ class AddContactState extends State<AddContact> {
     mobileNumberController.dispose();
     emailController.dispose();
     super.dispose();
+  }
+
+  bool checkEmailValidation(String value) {
+    bool isValid;
+    RegExp regex = RegExp(AppConstants.emailPattern);
+    if (!regex.hasMatch(value)) {
+      isValid = false;
+      return isValid;
+    } else {
+      isValid = true;
+      return isValid;
+    }
   }
 }
